@@ -1,7 +1,6 @@
 import React from 'react';
 import SiteSearchAPIConnector from '@elastic/search-ui-site-search-connector';
 import Popover from '@mapbox/mr-ui/popover';
-import { SearchDriver } from '@elastic/search-ui';
 import { SearchProvider, Results, SearchBox } from '@elastic/react-search-ui';
 import LevelIndicator from '../level-indicator/level-indicator';
 import ReactHtmlParser from 'react-html-parser';
@@ -11,10 +10,6 @@ const connector = new SiteSearchAPIConnector({
   engineKey: 'zpAwGSb8YMXtF9yDeS5K', // public engine key
   engineName: 'docs',
   documentType: ['page']
-});
-
-const driver = new SearchDriver({
-  apiConnector: connector
 });
 
 class Search extends React.Component {
@@ -80,7 +75,7 @@ class Search extends React.Component {
             <use xlinkHref="#icon-search" />
           </svg>
         </div>
-        {driver.getState().isLoading && props.value ? (
+        {props.isLoading && props.value ? (
           <div className="absolute top right flex-parent flex-parent--center-cross flex-parent--center-main w36 h36">
             <span className="loading loading--s" />
           </div>
@@ -93,7 +88,7 @@ class Search extends React.Component {
             if (e.target.value === '' || !e.target.value) {
               // if no value, close popover and clear driver
               this.setState({ popoverOpen: false });
-              driver.getActions().reset();
+              props.reset();
             } else {
               this.setState({ popoverOpen: true });
             }
@@ -185,9 +180,15 @@ class Search extends React.Component {
             apiConnector: connector
           }}
         >
-          {() => (
+          {({isLoading, reset}) => (
             <div className="App">
-              <SearchBox searchAsYouType={true} view={this.searchBox} />
+              <SearchBox searchAsYouType={true} view={props => {
+                return this.searchBox({
+                  ...props,
+                  isLoading,
+                  reset
+                });
+              }} />
               <Results
                 renderResult={this.result}
                 view={this.results}
